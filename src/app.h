@@ -9,24 +9,25 @@
 #include <chrono>
 #include <vector>
 
-class App {
-public:
+class App
+{
+  public:
     App();
     ~App();
 
     int Run();
 
-private:
+  private:
     bool PlayIndex(int index);
     void PlayNext();
     void SyncConfig();
 
-    void UpdateUIState(UIState& state, const std::vector<int>& visible_map) const;
-    void BuildVisibleList(std::vector<TrackEntry>& out_tracks, std::vector<int>& out_map) const;
+    void UpdateUIState(UIState &state, const std::vector<int> &visible_map) const;
+    void BuildVisibleList(std::vector<TrackEntry> &out_tracks, std::vector<int> &out_map) const;
 
-    bool HandleActions(const UIActions& actions, const std::vector<int>& visible_map,
+    bool HandleActions(const UIActions &actions, const std::vector<int> &visible_map,
                        std::chrono::steady_clock::time_point now);
-    void HandleShortcuts(bool capture_keyboard, const SDL_Event& ev);
+    void HandleShortcuts(bool capture_keyboard, const SDL_Event &ev);
 
     Config config_;
     Player player_;

@@ -1,17 +1,17 @@
 #include "scanner.h"
 #include "utils.h"
 
-bool IsPmdFile(const std::string& name)
+bool IsPmdFile(const std::string &name)
 {
     std::string lower = utils::to_lower(name);
     size_t len = lower.size();
 
     // check for .m extension
-    if (len >= 2 && lower[len-2] == '.' && lower[len-1] == 'm')
+    if (len >= 2 && lower[len - 2] == '.' && lower[len - 1] == 'm')
         return true;
 
     // check for .m2 extension
-    if (len >= 3 && lower[len-3] == '.' && lower[len-2] == 'm' && lower[len-1] == '2')
+    if (len >= 3 && lower[len - 3] == '.' && lower[len - 2] == 'm' && lower[len - 1] == '2')
         return true;
 
     return false;
@@ -24,9 +24,9 @@ Scanner::~Scanner()
     Stop();
 }
 
-void Scanner::Start(const std::filesystem::path& root, bool recursive, SortMode sort)
+void Scanner::Start(const std::filesystem::path &root, bool recursive, SortMode sort)
 {
-    Stop();  // wait for any running scan
+    Stop(); // wait for any running scan
     stop_.store(false);
     running_.store(true);
     thread_ = std::thread(&Scanner::ScanDir, this, root, recursive, sort);
@@ -45,7 +45,7 @@ bool Scanner::IsRunning() const
     return running_.load();
 }
 
-bool Scanner::ConsumeBatch(std::vector<TrackEntry>& out)
+bool Scanner::ConsumeBatch(std::vector<TrackEntry> &out)
 {
     std::lock_guard<std::mutex> lk(mtx_);
     if (batch_.empty())
@@ -58,8 +58,10 @@ void Scanner::ScanDir(std::filesystem::path root, bool recursive, SortMode)
 {
     std::vector<TrackEntry> local;
 
-    auto flush = [&]() {
-        if (local.empty()) return;
+    auto flush = [&]()
+    {
+        if (local.empty())
+            return;
         std::lock_guard<std::mutex> lk(mtx_);
         batch_.insert(batch_.end(), local.begin(), local.end());
         local.clear();
@@ -67,12 +69,14 @@ void Scanner::ScanDir(std::filesystem::path root, bool recursive, SortMode)
 
     std::error_code ec;
     auto base = std::filesystem::weakly_canonical(root, ec);
-    if (ec || !std::filesystem::exists(base)) {
+    if (ec || !std::filesystem::exists(base))
+    {
         running_.store(false);
         return;
     }
 
-    auto process = [&](const std::filesystem::directory_entry& entry) {
+    auto process = [&](const std::filesystem::directory_entry &entry)
+    {
         if (stop_.load())
             return false;
 
@@ -86,7 +90,8 @@ void Scanner::ScanDir(std::filesystem::path root, bool recursive, SortMode)
         TrackEntry e;
         e.display_name = p.filename().string();
         e.path = std::filesystem::absolute(p, ec);
-        if (ec) {
+        if (ec)
+        {
             e.path = p;
             ec.clear();
         }
@@ -100,13 +105,20 @@ void Scanner::ScanDir(std::filesystem::path root, bool recursive, SortMode)
         return true;
     };
 
-    if (recursive) {
-        for (std::filesystem::recursive_directory_iterator it(base), end; it != end; ++it) {
-            if (!process(*it)) break;
+    if (recursive)
+    {
+        for (std::filesystem::recursive_directory_iterator it(base), end; it != end; ++it)
+        {
+            if (!process(*it))
+                break;
         }
-    } else {
-        for (std::filesystem::directory_iterator it(base), end; it != end; ++it) {
-            if (!process(*it)) break;
+    }
+    else
+    {
+        for (std::filesystem::directory_iterator it(base), end; it != end; ++it)
+        {
+            if (!process(*it))
+                break;
         }
     }
 

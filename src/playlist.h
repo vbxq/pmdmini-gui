@@ -5,13 +5,14 @@
 #include <random>
 #include <vector>
 
-class Playlist {
-public:
+class Playlist
+{
+  public:
     void Clear();
-    void Add(const TrackEntry& entry);
+    void Add(const TrackEntry &entry);
     void SetItems(std::vector<TrackEntry> items);
 
-    const std::vector<TrackEntry>& Items() const;
+    const std::vector<TrackEntry> &Items() const;
 
     int CurrentIndex() const;
     void SetCurrent(int index);
@@ -22,10 +23,10 @@ public:
     int NextIndex(RepeatMode repeat, bool shuffle = false) const;
     int PrevIndex(RepeatMode repeat) const;
 
-    int FindIndexByPath(const std::filesystem::path& path) const;
+    int FindIndexByPath(const std::filesystem::path &path) const;
     void Sort(SortMode mode);
 
-private:
+  private:
     int RandomIndex(int exclude) const;
 
     std::vector<TrackEntry> items_;

@@ -4,21 +4,23 @@
 #include <vector>
 
 // SPSC ring buffer - decode thread writes, SDL callback reads
-class RingBuffer {
-public:
-    explicit RingBuffer(size_t cap)
-        : buffer_(cap + 1), capacity_(cap + 1), head_(0), tail_(0) {}
+class RingBuffer
+{
+  public:
+    explicit RingBuffer(size_t cap) : buffer_(cap + 1), capacity_(cap + 1), head_(0), tail_(0) {}
 
     // write samples, drop if full (non-blocking)
-    size_t Write(const float* data, size_t count)
+    size_t Write(const float *data, size_t count)
     {
         size_t written = 0;
         size_t h = head_.load(std::memory_order_relaxed);
         size_t t = tail_.load(std::memory_order_acquire);
 
-        for (size_t i = 0; i < count; i++) {
+        for (size_t i = 0; i < count; i++)
+        {
             size_t next = (h + 1) % capacity_;
-            if (next == t) {
+            if (next == t)
+            {
                 // full, drop rest
                 break;
             }
@@ -31,13 +33,14 @@ public:
         return written;
     }
 
-    size_t Read(float* out, size_t count)
+    size_t Read(float *out, size_t count)
     {
         size_t n = 0;
         size_t t = tail_.load(std::memory_order_relaxed);
         size_t h = head_.load(std::memory_order_acquire);
 
-        while (n < count && t != h) {
+        while (n < count && t != h)
+        {
             out[n++] = buffer_[t];
             t = (t + 1) % capacity_;
         }
@@ -53,11 +56,9 @@ public:
         return (h >= t) ? (h - t) : (capacity_ - t + h);
     }
 
-    void Clear() {
-        tail_.store(head_.load(std::memory_order_acquire), std::memory_order_release);
-    }
+    void Clear() { tail_.store(head_.load(std::memory_order_acquire), std::memory_order_release); }
 
-private:
+  private:
     std::vector<float> buffer_;
     size_t capacity_;
     std::atomic<size_t> head_;

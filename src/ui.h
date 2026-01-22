@@ -6,7 +6,8 @@
 #include <string>
 #include <vector>
 
-struct UIState {
+struct UIState
+{
     std::string directory;
     bool recursive = false;
     std::string search;
@@ -33,7 +34,8 @@ struct UIState {
     bool scanning = false;
 };
 
-struct UIActions {
+struct UIActions
+{
     bool request_browse = false;
     bool request_scan = false;
     bool play_selected = false;
@@ -65,14 +67,15 @@ struct UIActions {
     int select_index = -1;
 };
 
-class UI {
-public:
+class UI
+{
+  public:
     UI();
-    void Draw(const UIState& state, UIActions& actions, const float* waveform, size_t waveform_len);
+    void Draw(const UIState &state, UIActions &actions, const float *waveform, size_t waveform_len);
     void RequestSearchFocus();
 
-private:
-    void SyncTextBuffers(const UIState& state);
+  private:
+    void SyncTextBuffers(const UIState &state);
 
     std::string dir_cache_;
     std::string search_cache_;

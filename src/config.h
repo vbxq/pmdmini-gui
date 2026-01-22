@@ -4,9 +4,15 @@
 #include <filesystem>
 #include <string>
 
-enum class RepeatMode { Off, One, All };
+enum class RepeatMode
+{
+    Off,
+    One,
+    All
+};
 
-struct Config {
+struct Config
+{
     std::string last_directory;
     int volume = 100;
     bool mute = false;
@@ -21,14 +27,15 @@ struct Config {
 
     std::string audio_device;
 
-    bool Load(const std::filesystem::path& path);
-    bool Save(const std::filesystem::path& path) const;
+    bool Load(const std::filesystem::path &path);
+    bool Save(const std::filesystem::path &path) const;
 
     void MarkDirty(std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now());
-    bool ShouldSave(std::chrono::steady_clock::time_point now, std::chrono::milliseconds debounce) const;
+    bool ShouldSave(std::chrono::steady_clock::time_point now,
+                    std::chrono::milliseconds debounce) const;
     void Saved();
 
-private:
+  private:
     bool dirty_ = false;
     std::chrono::steady_clock::time_point dirty_since_{};
 };

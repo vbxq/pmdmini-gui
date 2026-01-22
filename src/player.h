@@ -11,9 +11,15 @@
 #include <thread>
 #include <vector>
 
-enum class PlayerState { Stopped, Playing, Paused };
+enum class PlayerState
+{
+    Stopped,
+    Playing,
+    Paused
+};
 
-struct TrackInfo {
+struct TrackInfo
+{
     std::filesystem::path path;
     std::string display_name;
     int sample_rate = 44100;
@@ -22,21 +28,22 @@ struct TrackInfo {
     int64_t duration_samples = 0;
 };
 
-class Player {
-public:
+class Player
+{
+  public:
     Player();
     ~Player();
 
     static int FrameDurationMs(int frames, int sample_rate);
-    static std::vector<std::string> NormalizeDeviceList(const std::vector<std::string>& devices);
+    static std::vector<std::string> NormalizeDeviceList(const std::vector<std::string> &devices);
     static std::vector<std::string> ListOutputDevices();
 
-    bool Load(const std::filesystem::path& path);
+    bool Load(const std::filesystem::path &path);
     void Play();
     void Pause();
     void Stop();
 
-    void SetOutputDevice(const std::string& name);
+    void SetOutputDevice(const std::string &name);
     void SetVolume(int vol);
     void SetMute(bool m);
 
@@ -50,15 +57,15 @@ public:
     bool HasTrackEnded();
     void SetOnTrackEnd(std::function<void()> callback);
 
-    size_t ReadWaveform(float* out, size_t count);
+    size_t ReadWaveform(float *out, size_t count);
 
-private:
+  private:
     void DecodeThread();
-    bool DoLoad(const std::filesystem::path& path);
+    bool DoLoad(const std::filesystem::path &path);
     bool InitAudio(int sample_rate, int channels);
     void ShutdownAudio();
 
-    static void SDLAudioCallback(void* userdata, Uint8* stream, int len);
+    static void SDLAudioCallback(void *userdata, Uint8 *stream, int len);
 
     std::atomic<PlayerState> state_{PlayerState::Stopped};
     std::atomic<bool> stop_decode_{false};

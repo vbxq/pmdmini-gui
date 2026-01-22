@@ -4,30 +4,48 @@
 
 using json = nlohmann::json;
 
-static int RepeatToInt(RepeatMode m) {
-    switch (m) {
-        case RepeatMode::Off: return 0;
-        case RepeatMode::One: return 1;
-        case RepeatMode::All: return 2;
+static int RepeatToInt(RepeatMode m)
+{
+    switch (m)
+    {
+    case RepeatMode::Off:
+        return 0;
+    case RepeatMode::One:
+        return 1;
+    case RepeatMode::All:
+        return 2;
     }
     return 0;
 }
 
-static RepeatMode IntToRepeat(int v) {
-    switch (v) {
-        case 1:  return RepeatMode::One;
-        case 2:  return RepeatMode::All;
-        default: return RepeatMode::Off;
+static RepeatMode IntToRepeat(int v)
+{
+    switch (v)
+    {
+    case 1:
+        return RepeatMode::One;
+    case 2:
+        return RepeatMode::All;
+    default:
+        return RepeatMode::Off;
     }
 }
 
-bool Config::Load(const std::filesystem::path& path) {
+bool Config::Load(const std::filesystem::path &path)
+{
     std::ifstream f(path);
-    if (!f) return false;
+    if (!f)
+        return false;
 
     json j;
-    try { f >> j; }
-    catch (...) { return false; }
+    try
+    {
+        f >> j;
+    }
+    catch (...)
+    {
+        return false;
+    }
 
     last_directory = j.value("last_directory", "");
     volume = j.value("volume", 100);
@@ -44,7 +62,8 @@ bool Config::Load(const std::filesystem::path& path) {
     return true;
 }
 
-bool Config::Save(const std::filesystem::path& path) const {
+bool Config::Save(const std::filesystem::path &path) const
+{
     json j;
     j["last_directory"] = last_directory;
     j["volume"] = volume;
@@ -59,23 +78,29 @@ bool Config::Save(const std::filesystem::path& path) const {
     j["audio_device"] = audio_device;
 
     std::ofstream f(path);
-    if (!f) return false;
+    if (!f)
+        return false;
 
     f << j.dump(2);
     return true;
 }
 
-void Config::MarkDirty(std::chrono::steady_clock::time_point now) {
-    if (!dirty_) dirty_since_ = now;
+void Config::MarkDirty(std::chrono::steady_clock::time_point now)
+{
+    if (!dirty_)
+        dirty_since_ = now;
     dirty_ = true;
 }
 
 bool Config::ShouldSave(std::chrono::steady_clock::time_point now,
-                        std::chrono::milliseconds debounce) const {
-    if (!dirty_) return false;
+                        std::chrono::milliseconds debounce) const
+{
+    if (!dirty_)
+        return false;
     return (now - dirty_since_) >= debounce;
 }
 
-void Config::Saved() {
+void Config::Saved()
+{
     dirty_ = false;
 }

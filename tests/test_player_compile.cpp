@@ -3,21 +3,25 @@
 #include <string>
 #include <vector>
 
-TEST_CASE("Player basic construction") {
+TEST_CASE("Player basic construction")
+{
     Player player;
     REQUIRE(player.GetState() == PlayerState::Stopped);
 }
 
-TEST_CASE("Player loading state default") {
+TEST_CASE("Player loading state default")
+{
     Player player;
     REQUIRE(player.IsLoading() == false);
 }
 
-TEST_CASE("Frame duration helper returns positive") {
+TEST_CASE("Frame duration helper returns positive")
+{
     REQUIRE(Player::FrameDurationMs(1024, 48000) > 0);
 }
 
-TEST_CASE("Normalize device list adds default") {
+TEST_CASE("Normalize device list adds default")
+{
     std::vector<std::string> empty;
     auto list = Player::NormalizeDeviceList(empty);
 

@@ -7,29 +7,36 @@
 #include <thread>
 #include <vector>
 
-struct TrackEntry {
+struct TrackEntry
+{
     std::string display_name;
     std::filesystem::path path;
     uintmax_t size = 0;
     std::filesystem::file_time_type modified;
 };
 
-enum class SortMode { Name, Date, Size };
+enum class SortMode
+{
+    Name,
+    Date,
+    Size
+};
 
-bool IsPmdFile(const std::string& name);
+bool IsPmdFile(const std::string &name);
 
-class Scanner {
-public:
+class Scanner
+{
+  public:
     Scanner();
     ~Scanner();
 
-    void Start(const std::filesystem::path& root, bool recursive, SortMode sort);
+    void Start(const std::filesystem::path &root, bool recursive, SortMode sort);
     void Stop();
     bool IsRunning() const;
 
-    bool ConsumeBatch(std::vector<TrackEntry>& out);
+    bool ConsumeBatch(std::vector<TrackEntry> &out);
 
-private:
+  private:
     void ScanDir(std::filesystem::path root, bool recursive, SortMode sort);
 
     std::atomic<bool> running_{false};

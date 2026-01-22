@@ -3,37 +3,44 @@
 #include "utils.h"
 #include <SDL.h>
 #include <SDL_opengl.h>
+#include <algorithm>
+#include <cstdlib>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_sdl2.h>
 #include <tinyfiledialogs.h>
-#include <algorithm>
-#include <cstdlib>
 
-namespace {
+namespace
+{
 
-int MapIndexToVisible(int idx, const std::vector<int>& map) {
-    for (size_t i = 0; i < map.size(); i++) {
-        if (map[i] == idx) return (int)i;
+int MapIndexToVisible(int idx, const std::vector<int> &map)
+{
+    for (size_t i = 0; i < map.size(); i++)
+    {
+        if (map[i] == idx)
+            return (int)i;
     }
     return -1;
 }
 
-std::filesystem::path GetConfigPath() {
+std::filesystem::path GetConfigPath()
+{
     auto home = std::getenv("HOME");
-    if (!home) return "config.json";
+    if (!home)
+        return "config.json";
     return std::filesystem::path(home) / ".config" / "pmdmini-gui" / "config.json";
 }
 
-void EnsureParentDir(const std::filesystem::path& p) {
+void EnsureParentDir(const std::filesystem::path &p)
+{
     std::error_code ec;
     std::filesystem::create_directories(p.parent_path(), ec);
 }
 
-}  // namespace
+} // namespace
 
-
-void App::SyncConfig() {
+void App::SyncConfig()
+{
     config_.last_directory = directory_;
     config_.recursive_scan = recursive_;
     config_.shuffle = shuffle_;
@@ -41,26 +48,32 @@ void App::SyncConfig() {
     config_.volume = volume_;
     config_.mute = mute_;
 
-    if (!audio_devices_.empty()) {
-        auto& dev = audio_devices_[audio_device_index_];
+    if (!audio_devices_.empty())
+    {
+        auto &dev = audio_devices_[audio_device_index_];
         config_.audio_device = (dev == "Default") ? "" : dev;
     }
 }
 
-App::App() {
+App::App()
+{
     Logger::Init();
 }
 
-App::~App() {
+App::~App()
+{
     Logger::Shutdown();
 }
 
-bool App::PlayIndex(int index) {
-    auto& items = playlist_.Items();
-    if (index < 0 || index >= (int)items.size()) return false;
+bool App::PlayIndex(int index)
+{
+    auto &items = playlist_.Items();
+    if (index < 0 || index >= (int)items.size())
+        return false;
 
-    auto& entry = items[index];
-    if (!player_.Load(entry.path)) {
+    auto &entry = items[index];
+    if (!player_.Load(entry.path))
+    {
         status_ = "Failed to load track";
         return false;
     }
@@ -73,30 +86,38 @@ bool App::PlayIndex(int index) {
     return true;
 }
 
-void App::PlayNext() {
+void App::PlayNext()
+{
     int next = playlist_.NextIndex(repeat_, shuffle_);
-    if (next >= 0) {
+    if (next >= 0)
+    {
         PlayIndex(next);
-    } else {
+    }
+    else
+    {
         player_.Stop();
         status_ = "Playlist ended";
     }
 }
 
-void App::BuildVisibleList(std::vector<TrackEntry>& out_tracks, std::vector<int>& out_map) const {
+void App::BuildVisibleList(std::vector<TrackEntry> &out_tracks, std::vector<int> &out_map) const
+{
     out_tracks.clear();
     out_map.clear();
 
-    auto& items = playlist_.Items();
-    for (int i = 0; i < (int)items.size(); i++) {
-        if (utils::contains_ignore_case(items[i].display_name, search_)) {
+    auto &items = playlist_.Items();
+    for (int i = 0; i < (int)items.size(); i++)
+    {
+        if (utils::contains_ignore_case(items[i].display_name, search_))
+        {
             out_tracks.push_back(items[i]);
             out_map.push_back(i);
         }
     }
 }
 
-void App::UpdateUIState(UIState& state, const std::vector<int>& visible_map) const {
+void App::UpdateUIState(UIState &state, const std::vector<int> &visible_map) const
+{
     state.directory = directory_;
     state.recursive = recursive_;
     state.search = search_;
@@ -122,16 +143,19 @@ void App::UpdateUIState(UIState& state, const std::vector<int>& visible_map) con
     state.current_index = MapIndexToVisible(playlist_.CurrentIndex(), visible_map);
 }
 
-bool App::HandleActions(const UIActions& actions, const std::vector<int>& visible_map,
-                        std::chrono::steady_clock::time_point now) {
+bool App::HandleActions(const UIActions &actions, const std::vector<int> &visible_map,
+                        std::chrono::steady_clock::time_point now)
+{
     bool changed = false;
 
-    if (actions.directory_changed) {
+    if (actions.directory_changed)
+    {
         directory_ = actions.directory;
         changed = true;
     }
 
-    if (actions.recursive_changed) {
+    if (actions.recursive_changed)
+    {
         recursive_ = actions.recursive;
         changed = true;
     }
@@ -139,7 +163,8 @@ bool App::HandleActions(const UIActions& actions, const std::vector<int>& visibl
     if (actions.search_changed)
         search_ = actions.search;
 
-    if (actions.sort_changed) {
+    if (actions.sort_changed)
+    {
         sort_ = actions.sort;
         playlist_.Sort(sort_);
     }
@@ -150,7 +175,8 @@ bool App::HandleActions(const UIActions& actions, const std::vector<int>& visibl
     if (actions.play_selected)
         PlayIndex(playlist_.SelectedIndex());
 
-    if (actions.toggle_play_pause) {
+    if (actions.toggle_play_pause)
+    {
         auto st = player_.GetState();
         if (st == PlayerState::Playing)
             player_.Pause();
@@ -166,17 +192,21 @@ bool App::HandleActions(const UIActions& actions, const std::vector<int>& visibl
     if (actions.next)
         PlayNext();
 
-    if (actions.prev) {
+    if (actions.prev)
+    {
         int prev = playlist_.PrevIndex(repeat_);
-        if (prev >= 0) PlayIndex(prev);
+        if (prev >= 0)
+            PlayIndex(prev);
     }
 
-    if (actions.shuffle_toggled) {
+    if (actions.shuffle_toggled)
+    {
         shuffle_ = !shuffle_;
         changed = true;
     }
 
-    if (actions.repeat_cycle) {
+    if (actions.repeat_cycle)
+    {
         if (repeat_ == RepeatMode::Off)
             repeat_ = RepeatMode::One;
         else if (repeat_ == RepeatMode::One)
@@ -186,34 +216,42 @@ bool App::HandleActions(const UIActions& actions, const std::vector<int>& visibl
         changed = true;
     }
 
-    if (actions.volume_changed) {
+    if (actions.volume_changed)
+    {
         volume_ = actions.volume;
         player_.SetVolume(volume_);
         changed = true;
     }
 
-    if (actions.mute_toggled) {
+    if (actions.mute_toggled)
+    {
         mute_ = actions.mute;
         player_.SetMute(mute_);
         changed = true;
     }
 
-    if (actions.audio_device_changed) {
+    if (actions.audio_device_changed)
+    {
         if (actions.audio_device_index >= 0 &&
-            actions.audio_device_index < (int)audio_devices_.size()) {
+            actions.audio_device_index < (int)audio_devices_.size())
+        {
             audio_device_index_ = actions.audio_device_index;
             player_.SetOutputDevice(audio_devices_[audio_device_index_]);
             changed = true;
         }
     }
 
-    if (actions.request_scan) {
-        if (!directory_.empty() && std::filesystem::exists(directory_)) {
+    if (actions.request_scan)
+    {
+        if (!directory_.empty() && std::filesystem::exists(directory_))
+        {
             playlist_.Clear();
             scanner_.Start(directory_, recursive_, sort_);
             scanning_active_ = true;
             status_ = "Scanning...";
-        } else {
+        }
+        else
+        {
             status_ = "Directory not found";
         }
     }
@@ -224,14 +262,18 @@ bool App::HandleActions(const UIActions& actions, const std::vector<int>& visibl
     return changed;
 }
 
-void App::HandleShortcuts(bool capture_keyboard, const SDL_Event& ev) {
-    if (capture_keyboard) return;
-    if (ev.type != SDL_KEYDOWN) return;
+void App::HandleShortcuts(bool capture_keyboard, const SDL_Event &ev)
+{
+    if (capture_keyboard)
+        return;
+    if (ev.type != SDL_KEYDOWN)
+        return;
 
     auto key = ev.key.keysym.sym;
     auto mod = SDL_GetModState();
 
-    if (key == SDLK_SPACE) {
+    if (key == SDLK_SPACE)
+    {
         auto st = player_.GetState();
         if (st == PlayerState::Playing)
             player_.Pause();
@@ -242,32 +284,40 @@ void App::HandleShortcuts(bool capture_keyboard, const SDL_Event& ev) {
         return;
     }
 
-    if (key == SDLK_RETURN) {
+    if (key == SDLK_RETURN)
+    {
         PlayIndex(playlist_.SelectedIndex());
         return;
     }
 
-    if ((mod & KMOD_CTRL) && key == SDLK_f) {
+    if ((mod & KMOD_CTRL) && key == SDLK_f)
+    {
         ui_.RequestSearchFocus();
         return;
     }
 
-    if (key == SDLK_UP) {
+    if (key == SDLK_UP)
+    {
         int sel = playlist_.SelectedIndex();
-        if (sel > 0) playlist_.SetSelected(sel - 1);
+        if (sel > 0)
+            playlist_.SetSelected(sel - 1);
         return;
     }
 
-    if (key == SDLK_DOWN) {
+    if (key == SDLK_DOWN)
+    {
         int sel = playlist_.SelectedIndex();
         int count = (int)playlist_.Items().size();
-        if (sel < count - 1) playlist_.SetSelected(sel + 1);
+        if (sel < count - 1)
+            playlist_.SetSelected(sel + 1);
         return;
     }
 }
 
-int App::Run() {
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0) {
+int App::Run()
+{
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO) != 0)
+    {
         Logger::Error("SDL init failed");
         return 1;
     }
@@ -285,7 +335,8 @@ int App::Run() {
     audio_devices_ = Player::ListOutputDevices();
     audio_device_index_ = 0;
 
-    if (!config_.audio_device.empty()) {
+    if (!config_.audio_device.empty())
+    {
         auto it = std::find(audio_devices_.begin(), audio_devices_.end(), config_.audio_device);
         if (it != audio_devices_.end())
             audio_device_index_ = (int)std::distance(audio_devices_.begin(), it);
@@ -303,12 +354,12 @@ int App::Run() {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
-    auto window = SDL_CreateWindow("pmdmini-gui",
-        config_.window_x, config_.window_y,
-        config_.window_w, config_.window_h,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    auto window =
+        SDL_CreateWindow("pmdmini-gui", config_.window_x, config_.window_y, config_.window_w,
+                         config_.window_h, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
-    if (!window) {
+    if (!window)
+    {
         Logger::Error("SDL window creation failed");
         return 1;
     }
@@ -327,28 +378,34 @@ int App::Run() {
     waveform_.resize(2048);
 
     bool running = true;
-    while (running) {
+    while (running)
+    {
         auto now = std::chrono::steady_clock::now();
 
         SDL_Event ev;
-        while (SDL_PollEvent(&ev)) {
+        while (SDL_PollEvent(&ev))
+        {
             ImGui_ImplSDL2_ProcessEvent(&ev);
 
             if (ev.type == SDL_QUIT)
                 running = false;
 
-            if (ev.type == SDL_DROPFILE) {
+            if (ev.type == SDL_DROPFILE)
+            {
                 std::filesystem::path p = ev.drop.file;
                 SDL_free(ev.drop.file);
 
-                if (std::filesystem::is_directory(p)) {
+                if (std::filesystem::is_directory(p))
+                {
                     directory_ = p.string();
                     config_.MarkDirty(now);
                     playlist_.Clear();
                     scanner_.Start(directory_, recursive_, sort_);
                     scanning_active_ = true;
                     status_ = "Scanning...";
-                } else if (IsPmdFile(p.filename().string())) {
+                }
+                else if (IsPmdFile(p.filename().string()))
+                {
                     TrackEntry entry;
                     entry.display_name = p.filename().string();
                     entry.path = std::filesystem::absolute(p);
@@ -363,19 +420,23 @@ int App::Run() {
 
         // scanner batches
         std::vector<TrackEntry> batch;
-        if (scanner_.ConsumeBatch(batch)) {
-            for (auto& e : batch) playlist_.Add(e);
+        if (scanner_.ConsumeBatch(batch))
+        {
+            for (auto &e : batch)
+                playlist_.Add(e);
             status_ = "Scanning (" + std::to_string(playlist_.Items().size()) + ")";
         }
 
-        if (!scanner_.IsRunning() && scanning_active_) {
+        if (!scanner_.IsRunning() && scanning_active_)
+        {
             scanning_active_ = false;
             playlist_.Sort(sort_);
             status_ = "Scan complete (" + std::to_string(playlist_.Items().size()) + ")";
         }
 
         // auto-next on track end
-        if (player_.HasTrackEnded()) {
+        if (player_.HasTrackEnded())
+        {
             PlayNext();
         }
 
@@ -396,11 +457,13 @@ int App::Run() {
         UIActions actions{};
         ui_.Draw(ui_state, actions, waveform_.data(), waveform_count);
 
-        if (actions.request_browse) {
-            auto folder = tinyfd_selectFolderDialog("Select PMD folder",
-                directory_.empty() ? nullptr : directory_.c_str());
+        if (actions.request_browse)
+        {
+            auto folder = tinyfd_selectFolderDialog(
+                "Select PMD folder", directory_.empty() ? nullptr : directory_.c_str());
 
-            if (folder) {
+            if (folder)
+            {
                 directory_ = folder;
                 config_.MarkDirty(now);
                 playlist_.Clear();
@@ -412,7 +475,8 @@ int App::Run() {
 
         HandleActions(actions, visible_map, now);
 
-        if (config_.ShouldSave(now, std::chrono::milliseconds(750))) {
+        if (config_.ShouldSave(now, std::chrono::milliseconds(750)))
+        {
             SyncConfig();
             EnsureParentDir(config_path);
             config_.Save(config_path);

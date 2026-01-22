@@ -3,13 +3,15 @@
 #include <chrono>
 #include <filesystem>
 
-TEST_CASE("Config defaults are valid") {
+TEST_CASE("Config defaults are valid")
+{
     Config cfg;
     REQUIRE(cfg.volume == 100);
     REQUIRE(cfg.recursive_scan == false);
 }
 
-TEST_CASE("Config round trip") {
+TEST_CASE("Config round trip")
+{
     Config cfg;
     cfg.last_directory = "/tmp";
     cfg.volume = 42;
@@ -25,7 +27,8 @@ TEST_CASE("Config round trip") {
     REQUIRE(loaded.shuffle == true);
 }
 
-TEST_CASE("Config save debounce") {
+TEST_CASE("Config save debounce")
+{
     Config cfg;
     auto t = std::chrono::steady_clock::time_point{};
 

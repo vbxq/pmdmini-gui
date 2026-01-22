@@ -2,7 +2,8 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 
-TEST_CASE("Ring buffer basic push/pop") {
+TEST_CASE("Ring buffer basic push/pop")
+{
     RingBuffer rb(8);
 
     float in[4] = {0.1f, 0.2f, 0.3f, 0.4f};
@@ -13,7 +14,8 @@ TEST_CASE("Ring buffer basic push/pop") {
     REQUIRE(out[2] == Catch::Approx(0.3f));
 }
 
-TEST_CASE("Ring buffer drops new samples on overflow") {
+TEST_CASE("Ring buffer drops new samples on overflow")
+{
     RingBuffer rb(4);
 
     float in[6] = {1, 2, 3, 4, 5, 6};
@@ -27,7 +29,8 @@ TEST_CASE("Ring buffer drops new samples on overflow") {
     REQUIRE(out[3] == Catch::Approx(4));
 }
 
-TEST_CASE("Ring buffer available count") {
+TEST_CASE("Ring buffer available count")
+{
     RingBuffer rb(8);
 
     REQUIRE(rb.Available() == 0);
@@ -41,7 +44,8 @@ TEST_CASE("Ring buffer available count") {
     REQUIRE(rb.Available() == 1);
 }
 
-TEST_CASE("Ring buffer clear") {
+TEST_CASE("Ring buffer clear")
+{
     RingBuffer rb(8);
 
     float in[4] = {1, 2, 3, 4};
