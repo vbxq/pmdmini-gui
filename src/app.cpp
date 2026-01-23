@@ -491,6 +491,12 @@ int App::Run()
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
+
+        // frame limiter - cap at ~60fps if vsync fails
+        auto frame_end = std::chrono::steady_clock::now();
+        auto frame_time = std::chrono::duration_cast<std::chrono::milliseconds>(frame_end - now);
+        if (frame_time.count() < 16)
+            SDL_Delay((Uint32)(16 - frame_time.count()));
     }
 
     int w, h, x, y;

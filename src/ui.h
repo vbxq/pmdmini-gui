@@ -76,10 +76,16 @@ class UI
 
   private:
     void SyncTextBuffers(const UIState &state);
+    void DrawWaveform(const float *waveform, size_t waveform_len, float width, float height);
 
     std::string dir_cache_;
     std::string search_cache_;
     char dir_buf_[512] = {};
     char search_buf_[256] = {};
     bool focus_search_ = false;
+
+    // waveform history for smooth visualization
+    static constexpr size_t kWaveformBars = 64;
+    float waveform_peaks_[kWaveformBars] = {};
+    float waveform_smooth_[kWaveformBars] = {};
 };
