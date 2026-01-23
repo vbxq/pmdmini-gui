@@ -304,6 +304,14 @@ bool Player::InitAudio(int sample_rate, int channels)
             return false;
     }
 
+    // close existing device so multiple devices can't consume the same buffer
+    // without it they can consume from same ring buffer causing x3 speedup
+    if (device_)
+    {
+        SDL_CloseAudioDevice(device_);
+        device_ = 0;
+    }
+
     SDL_AudioSpec want{}, got{};
     want.freq = sample_rate;
     want.format = AUDIO_F32SYS;
