@@ -74,19 +74,18 @@ Settings are saved to:
 - Linux: `~/.config/pmdmini-gui/config.json`
 - Windows: `%APPDATA%\pmdmini-gui\config.json`
 
-## Architecture
-
-Decode thread writes to a ring buffer, SDL audio callback reads from it. Adds ~5s latency but no more clicks during file scans. Waveform samples from the same stream.
-
 ## Known Issues
 
 - Waveform viz is kinda broken
-- Seeking reloads the whole track from start (slow on longer files) (EDIT: i removed this for now)
+- Seeking reloads the whole track from start (slow on longer files) (Edit: I removed this for now)
 
 ## Note
 
-Made this because ZUN's PC-98 FM synthesis work is genuinely peak and the original PMD files deserve proper tooling  
-Edit : Github thinks this thing is written in C, probably because of the music files, I tried updating the .gitattributes to fix that but it doesn't seem to work
+All Touhou PC98 OSTs files were generously given to me by @niiroiwakura, thank you!
+
+Github thinks this thing is written in C, probably because of the music files, I tried updating the .gitattributes to fix that but it doesn't seem to work
+
+We also have a small Discord server ! **https://discord.gg/xyqZ86nawn**. Feel free to ask for help or questions about the project.
 
 ## License and Credits
 
