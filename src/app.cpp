@@ -1,4 +1,5 @@
 #include "app.h"
+#include "icon_data.h"
 #include "logger.h"
 #include "utils.h"
 #include <SDL.h>
@@ -369,6 +370,18 @@ int App::Run()
     {
         Logger::Error("SDL window creation failed");
         return 1;
+    }
+
+    // set window icon
+    auto icon_rw = SDL_RWFromConstMem(icon_bmp_data, icon_bmp_data_len);
+    if (icon_rw)
+    {
+        auto icon_surface = SDL_LoadBMP_RW(icon_rw, 1);
+        if (icon_surface)
+        {
+            SDL_SetWindowIcon(window, icon_surface);
+            SDL_FreeSurface(icon_surface);
+        }
     }
 
     auto gl_ctx = SDL_GL_CreateContext(window);

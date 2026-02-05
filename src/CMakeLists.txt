@@ -1,3 +1,10 @@
+# Windows application icon
+if(WIN32)
+  set(APP_ICON_RESOURCE "${CMAKE_SOURCE_DIR}/resources/app.rc")
+else()
+  set(APP_ICON_RESOURCE "")
+endif()
+
 add_executable(pmdmini-gui
   main.cpp
   app.cpp app.h
@@ -9,6 +16,7 @@ add_executable(pmdmini-gui
   scanner.cpp scanner.h
   ui.cpp ui.h
   ${TINYFILEDIALOGS_SOURCE_DIR}/tinyfiledialogs.c
+  ${APP_ICON_RESOURCE}
 )
 
 if(MSVC)
