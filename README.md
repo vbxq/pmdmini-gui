@@ -90,4 +90,4 @@ We also have a small Discord server ! **https://discord.gg/xyqZ86nawn**. Feel fr
 ## License and Credits
 
 BSD 3-Clause License. See LICENSE file for details.  
-Uses [pmdmini](https://github.com/digital-sound-antiques/pmdmini) (modified BSD) and other open-source libraries. See individual dependencies for licenses.
+Uses [pmdmini](https://github.com/gzaffin/pmdmini) (modified BSD) and other open-source libraries. See individual dependencies for licenses.
