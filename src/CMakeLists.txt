@@ -11,11 +11,19 @@ add_executable(pmdmini-gui
   ${TINYFILEDIALOGS_SOURCE_DIR}/tinyfiledialogs.c
 )
 
-set_source_files_properties(
-  ${TINYFILEDIALOGS_SOURCE_DIR}/tinyfiledialogs.c
-  PROPERTIES
-    COMPILE_OPTIONS "-w"
-)
+if(MSVC)
+  set_source_files_properties(
+    ${TINYFILEDIALOGS_SOURCE_DIR}/tinyfiledialogs.c
+    PROPERTIES
+      COMPILE_OPTIONS "/w"
+  )
+else()
+  set_source_files_properties(
+    ${TINYFILEDIALOGS_SOURCE_DIR}/tinyfiledialogs.c
+    PROPERTIES
+      COMPILE_OPTIONS "-w"
+  )
+endif()
 
 set(IMGUI_DIR ${imgui_SOURCE_DIR})
 set(IMGUI_SOURCES

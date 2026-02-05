@@ -25,10 +25,17 @@ int MapIndexToVisible(int idx, const std::vector<int> &map)
 
 std::filesystem::path GetConfigPath()
 {
+#ifdef _WIN32
+    auto appdata = std::getenv("APPDATA");
+    if (!appdata)
+        return "config.json";
+    return std::filesystem::path(appdata) / "pmdmini-gui" / "config.json";
+#else
     auto home = std::getenv("HOME");
     if (!home)
         return "config.json";
     return std::filesystem::path(home) / ".config" / "pmdmini-gui" / "config.json";
+#endif
 }
 
 void EnsureParentDir(const std::filesystem::path &p)
