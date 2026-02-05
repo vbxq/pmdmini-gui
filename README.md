@@ -1,6 +1,6 @@
 # pmdmini-gui <img src="resources/logo.png" alt="logo" width="41" align="top">
 
-GUI player for PC-98 PMD music files (.M/.M2) on Windows and Linux
+GUI player for PC-98 PMD music files (.M/.M2/.M26/.M86) on Windows and Linux
 
 <img src="resources/screenshot.png" width="800">
 
