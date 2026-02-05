@@ -1,12 +1,13 @@
 # pmdmini-gui
 
-GUI player for PC-98 PMD music files (.M/.M2) on Linux
+GUI player for PC-98 PMD music files (.M/.M2) on Windows and Linux
 
 <img src="screenshot.png" width="800">
 
 ## Features
 
-- Plays .M and .M2 files (PMD format)
+- Plays .M and .M2 files (PC-98 PMD format YM2203/YM2608, OPN/OPNA)
+- Plays .M26 and .M86 files too (PC-8801 support)
 - Playlist with search and sorting
 - Drag & drop support
 - Waveform visualization
@@ -17,7 +18,11 @@ GUI player for PC-98 PMD music files (.M/.M2) on Linux
 
 ## Building
 
-**Dependencies (Ubuntu/Debian):**
+You can get the binary from the release page ! You don't have to build it manually.
+
+### Linux
+
+**Dependencies:**
 ```bash
 sudo apt-get install cmake ninja-build g++ \
   libsdl2-dev libgl1-mesa-dev \
@@ -26,27 +31,48 @@ sudo apt-get install cmake ninja-build g++ \
 
 **Build:**
 ```bash
-cmake -S . -B build -G Ninja
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ./build/src/pmdmini-gui
 ```
 
-For offline builds with local pmdmini:
+### Windows (MinGW-w64)
+
+**Dependencies:**
+
+1. Install [MSYS2](https://www.msys2.org/)
+2. Open MSYS2 MinGW64 terminal and install dependencies:
 ```bash
-cmake -S . -B build -G Ninja -DPMDMINI_SOURCE_DIR=/path/to/pmdmini
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-cmake mingw-w64-x86_64-SDL2
+```
+3. Add `C:\msys64\mingw64\bin` to your PATH
+
+Alternatively, you can install MinGW-w64 standalone and SDL2 development libraries manually
+
+**Build:**
+```bash
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake --build build
 ```
 
-You can also grab binaries from the releases page.
+The executable is statically linked, and located at `build/src/pmdmini-gui.exe`
+
+### Offline builds
+
+For offline builds with local pmdmini:
+```bash
+cmake -S . -B build -DPMDMINI_SOURCE_DIR=/path/to/pmdmini -DCMAKE_BUILD_TYPE=Release
+```
 
 ## Usage
 
 1. Browse to a directory or type the path
 2. Click Scan (enable Recursive for subdirectories)
-3. Double-click a track or drag .M/.M2 files into the window
+3. Double-click a track or drag .M/.M2/.M26/.M86 files into the window
 
-Settings are saved to `~/.config/pmdmini-gui/config.json`.
-
-Touhou 5 (Mystic Square) soundtrack included in `music_files/` to get started.
+Settings are saved to:
+- Linux: `~/.config/pmdmini-gui/config.json`
+- Windows: `%APPDATA%\pmdmini-gui\config.json`
 
 ## Architecture
 
@@ -55,11 +81,11 @@ Decode thread writes to a ring buffer, SDL audio callback reads from it. Adds ~5
 ## Known Issues
 
 - Waveform viz is kinda broken
-- Seeking reloads the whole track from start (slow on longer files)
+- Seeking reloads the whole track from start (slow on longer files) (EDIT: i removed this for now)
 
 ## Note
 
-Made this because ZUN's PC-98 FM synthesis work is genuinely peak and the original PMD files deserve proper tooling.
+Made this because ZUN's PC-98 FM synthesis work is genuinely peak and the original PMD files deserve proper tooling
 
 ## License and Credits
 
