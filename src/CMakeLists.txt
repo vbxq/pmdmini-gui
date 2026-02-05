@@ -50,11 +50,26 @@ target_include_directories(pmdmini-gui PRIVATE
   ${CMAKE_SOURCE_DIR}/include
 )
 
-target_link_libraries(pmdmini-gui PRIVATE
-  ${SDL2_LIBRARIES}
-  OpenGL::GL
-  nlohmann_json::nlohmann_json
-  pmdmini
-)
+# Static linking on Windows with MinGW
+if(WIN32 AND MINGW)
+  # Use static SDL2 and static MinGW runtime
+  target_link_libraries(pmdmini-gui PRIVATE
+    -static
+    SDL2::SDL2main
+    SDL2::SDL2-static
+    OpenGL::GL
+    nlohmann_json::nlohmann_json
+    pmdmini
+  )
+  # Hide console window for GUI app
+  target_link_options(pmdmini-gui PRIVATE -mwindows)
+else()
+  target_link_libraries(pmdmini-gui PRIVATE
+    ${SDL2_LIBRARIES}
+    OpenGL::GL
+    nlohmann_json::nlohmann_json
+    pmdmini
+  )
+endif()
 
 pmdmini_gui_set_warnings(pmdmini-gui)
