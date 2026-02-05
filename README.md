@@ -85,7 +85,8 @@ Decode thread writes to a ring buffer, SDL audio callback reads from it. Adds ~5
 
 ## Note
 
-Made this because ZUN's PC-98 FM synthesis work is genuinely peak and the original PMD files deserve proper tooling
+Made this because ZUN's PC-98 FM synthesis work is genuinely peak and the original PMD files deserve proper tooling  
+Edit : Github thinks this thing is written in C, probably because of the music files, I tried updating the .gitattributes to fix that but it doesn't seem to work
 
 ## License and Credits
 
