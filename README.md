@@ -2,7 +2,7 @@
 
 GUI player for PC-98 PMD music files (.M/.M2) on Windows and Linux
 
-<img src="screenshot.png" width="800">
+<img src="resources/screenshot.png" width="800">
 
 ## Features
 
