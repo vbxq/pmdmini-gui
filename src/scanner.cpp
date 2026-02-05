@@ -6,12 +6,24 @@ bool IsPmdFile(const std::string &name)
     std::string lower = utils::to_lower(name);
     size_t len = lower.size();
 
-    // check for .m extension
+    // .mdt appears to be PCM samples, so not playable
+    if (len >= 4 && lower.substr(len - 4) == ".mdt")
+        return false;
+
+    // .m extension
     if (len >= 2 && lower[len - 2] == '.' && lower[len - 1] == 'm')
         return true;
 
-    // check for .m2 extension
+    // .m2 extension
     if (len >= 3 && lower[len - 3] == '.' && lower[len - 2] == 'm' && lower[len - 1] == '2')
+        return true;
+
+    // .m86 extension (PC-8801)
+    if (len >= 4 && lower.substr(len - 4) == ".m86")
+        return true;
+
+    // .m26 extension (PC-8801 extended)
+    if (len >= 4 && lower.substr(len - 4) == ".m26")
         return true;
 
     return false;
