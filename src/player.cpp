@@ -105,6 +105,39 @@ void Player::SetMute(bool mute)
     mute_.store(mute);
 }
 
+void Player::StartFadeOut(int duration_ms)
+{
+    float total_samples = (duration_ms / 1000.0f) * sample_rate_ * channels_;
+    if (total_samples < 1.0f)
+        total_samples = 1.0f;
+    fade_target_ = 0.0f;
+    fade_delta_ = -fade_gain_ / total_samples;
+    fade_out_complete_.store(false);
+}
+
+void Player::SetPendingFadeIn(int duration_ms)
+{
+    pending_fade_in_ms_.store(duration_ms);
+}
+
+void Player::ResetFade()
+{
+    fade_gain_ = 1.0f;
+    fade_target_ = 1.0f;
+    fade_delta_ = 0.0f;
+    fade_out_complete_.store(false);
+}
+
+bool Player::IsFadeOutComplete()
+{
+    return fade_out_complete_.exchange(false);
+}
+
+bool Player::IsFadingIn() const
+{
+    return fade_target_ == 1.0f && fade_delta_ > 0.0f;
+}
+
 void Player::SetOutputDevice(const std::string &name)
 {
     auto next = (name == "Default") ? "" : name;
@@ -196,8 +229,27 @@ void Player::DecodeThread()
             loaded_.store(ok);
             loading_.store(false);
 
-            if (ok && state_.load() == PlayerState::Playing)
-                SDL_PauseAudioDevice(device_, 0);
+            if (ok)
+            {
+                int fade_ms = pending_fade_in_ms_.exchange(0);
+                if (fade_ms > 0)
+                {
+                    float total = (fade_ms / 1000.0f) * sample_rate_ * channels_;
+                    if (total < 1.0f)
+                        total = 1.0f;
+                    fade_gain_ = 0.0f;
+                    fade_target_ = 1.0f;
+                    fade_delta_ = 1.0f / total;
+                    fade_out_complete_.store(false);
+                }
+                else
+                {
+                    ResetFade();
+                }
+
+                if (state_.load() == PlayerState::Playing)
+                    SDL_PauseAudioDevice(device_, 0);
+            }
         }
 
         if (state_.load() != PlayerState::Playing || !loaded_.load())
@@ -394,9 +446,30 @@ void Player::SDLAudioCallback(void *userdata, Uint8 *stream, int len)
     }
 
     float vol = std::clamp(player->volume_.load() / 100.0f, 0.0f, 1.0f);
-    if (vol != 1.0f)
+
+    // apply fade + volume in one pass
+    float gain = player->fade_gain_;
+    float delta = player->fade_delta_;
+    float target = player->fade_target_;
+
+    for (size_t i = 0; i < samples; i++)
     {
-        for (size_t i = 0; i < samples; i++)
-            out[i] *= vol;
+        out[i] *= vol * gain;
+
+        if (delta != 0.0f)
+        {
+            gain += delta;
+            if ((delta < 0.0f && gain <= target) || (delta > 0.0f && gain >= target))
+            {
+                gain = target;
+                delta = 0.0f;
+
+                if (target == 0.0f)
+                    player->fade_out_complete_.store(true);
+            }
+        }
     }
+
+    player->fade_gain_ = gain;
+    player->fade_delta_ = delta;
 }

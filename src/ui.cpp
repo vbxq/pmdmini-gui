@@ -237,6 +237,28 @@ void UI::Draw(const UIState &state, UIActions &actions, const float *waveform, s
     if (ImGui::Button(GetRepeatLabel(state.repeat)))
         actions.repeat_cycle = true;
 
+    ImGui::SameLine();
+    ImGui::Text("  ");
+    ImGui::SameLine();
+    bool cf = state.crossfade_enabled;
+    if (ImGui::Checkbox("Crossfade", &cf))
+    {
+        actions.crossfade_toggled = true;
+        actions.crossfade_enabled = cf;
+    }
+
+    if (state.crossfade_enabled)
+    {
+        ImGui::SameLine();
+        int cf_ms = state.crossfade_duration_ms;
+        ImGui::SetNextItemWidth(120.0f);
+        if (ImGui::SliderInt("##cf_dur", &cf_ms, 200, 5000, "%dms"))
+        {
+            actions.crossfade_duration_changed = true;
+            actions.crossfade_duration_ms = cf_ms;
+        }
+    }
+
     char dur_str[32];
     if (state.duration_known)
         snprintf(dur_str, sizeof(dur_str), "%.1fs", state.duration_sec);

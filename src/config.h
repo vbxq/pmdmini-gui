@@ -27,6 +27,9 @@ struct Config
 
     std::string audio_device;
 
+    bool crossfade_enabled = false;
+    int crossfade_duration_ms = 1000;
+
     bool Load(const std::filesystem::path &path);
     bool Save(const std::filesystem::path &path) const;
 

@@ -32,6 +32,9 @@ struct UIState
 
     std::string status;
     bool scanning = false;
+
+    bool crossfade_enabled = false;
+    int crossfade_duration_ms = 1000;
 };
 
 struct UIActions
@@ -65,6 +68,11 @@ struct UIActions
     bool sort_changed = false;
     SortMode sort = SortMode::Name;
     int select_index = -1;
+
+    bool crossfade_toggled = false;
+    bool crossfade_enabled = false;
+    bool crossfade_duration_changed = false;
+    int crossfade_duration_ms = 1000;
 };
 
 class UI

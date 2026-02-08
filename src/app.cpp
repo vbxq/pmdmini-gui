@@ -55,6 +55,8 @@ void App::SyncConfig()
     config_.repeat = repeat_;
     config_.volume = volume_;
     config_.mute = mute_;
+    config_.crossfade_enabled = crossfade_enabled_;
+    config_.crossfade_duration_ms = crossfade_duration_ms_;
 
     if (!audio_devices_.empty())
     {
@@ -73,7 +75,7 @@ App::~App()
     Logger::Shutdown();
 }
 
-bool App::PlayIndex(int index)
+bool App::PlayIndex(int index, bool fade_in)
 {
     auto &items = playlist_.Items();
     if (index < 0 || index >= (int)items.size())
@@ -89,22 +91,39 @@ bool App::PlayIndex(int index)
     playlist_.SetCurrent(index);
     player_.SetVolume(volume_);
     player_.SetMute(mute_);
+
+    if (fade_in)
+    {
+        player_.SetPendingFadeIn(crossfade_duration_ms_);
+        status_ = "Fading in...";
+    }
+
     player_.Play();
-    status_ = "Playing";
+    if (!fade_in)
+        status_ = "Playing";
     return true;
 }
 
 void App::PlayNext()
 {
     int next = playlist_.NextIndex(repeat_, shuffle_);
-    if (next >= 0)
-    {
-        PlayIndex(next);
-    }
-    else
+    if (next < 0)
     {
         player_.Stop();
         status_ = "Playlist ended";
+        return;
+    }
+
+    if (crossfade_enabled_ && player_.GetState() == PlayerState::Playing)
+    {
+        fading_to_next_ = true;
+        pending_next_index_ = next;
+        player_.StartFadeOut(crossfade_duration_ms_);
+        status_ = "Fading out...";
+    }
+    else
+    {
+        PlayIndex(next);
     }
 }
 
@@ -149,6 +168,8 @@ void App::UpdateUIState(UIState &state, const std::vector<int> &visible_map) con
 
     state.selected_index = MapIndexToVisible(playlist_.SelectedIndex(), visible_map);
     state.current_index = MapIndexToVisible(playlist_.CurrentIndex(), visible_map);
+    state.crossfade_enabled = crossfade_enabled_;
+    state.crossfade_duration_ms = crossfade_duration_ms_;
 }
 
 bool App::HandleActions(const UIActions &actions, const std::vector<int> &visible_map,
@@ -204,7 +225,19 @@ bool App::HandleActions(const UIActions &actions, const std::vector<int> &visibl
     {
         int prev = playlist_.PrevIndex(repeat_);
         if (prev >= 0)
-            PlayIndex(prev);
+        {
+            if (crossfade_enabled_ && player_.GetState() == PlayerState::Playing)
+            {
+                fading_to_next_ = true;
+                pending_next_index_ = prev;
+                player_.StartFadeOut(crossfade_duration_ms_);
+                status_ = "Fading out...";
+            }
+            else
+            {
+                PlayIndex(prev);
+            }
+        }
     }
 
     if (actions.shuffle_toggled)
@@ -247,6 +280,18 @@ bool App::HandleActions(const UIActions &actions, const std::vector<int> &visibl
             player_.SetOutputDevice(audio_devices_[audio_device_index_]);
             changed = true;
         }
+    }
+
+    if (actions.crossfade_toggled)
+    {
+        crossfade_enabled_ = actions.crossfade_enabled;
+        changed = true;
+    }
+
+    if (actions.crossfade_duration_changed)
+    {
+        crossfade_duration_ms_ = actions.crossfade_duration_ms;
+        changed = true;
     }
 
     if (actions.request_scan)
@@ -339,6 +384,8 @@ int App::Run()
     repeat_ = config_.repeat;
     volume_ = config_.volume;
     mute_ = config_.mute;
+    crossfade_enabled_ = config_.crossfade_enabled;
+    crossfade_duration_ms_ = config_.crossfade_duration_ms;
 
     audio_devices_ = Player::ListOutputDevices();
     audio_device_index_ = 0;
@@ -454,10 +501,65 @@ int App::Run()
             status_ = "Scan complete (" + std::to_string(playlist_.Items().size()) + ")";
         }
 
-        // auto-next on track end
+        // update status when fade in finishes
+        if (status_ == "Fading in..." && !player_.IsFadingIn())
+            status_ = "Playing";
+
+        // crossfade: anticipate track end and start fading out early
+        if (crossfade_enabled_ && !fading_to_next_ &&
+            player_.GetState() == PlayerState::Playing)
+        {
+            auto info = player_.GetTrackInfo();
+            if (info.duration_known)
+            {
+                float sr = info.sample_rate > 0 ? (float)info.sample_rate : 44100.0f;
+                float pos_sec = player_.GetPositionSamples() / sr;
+                float dur_sec = info.duration_samples / sr;
+                float remaining_ms = (dur_sec - pos_sec) * 1000.0f;
+
+                if (remaining_ms <= crossfade_duration_ms_ && remaining_ms > 0)
+                {
+                    int next = playlist_.NextIndex(repeat_, shuffle_);
+                    if (next >= 0)
+                    {
+                        fading_to_next_ = true;
+                        pending_next_index_ = next;
+                        player_.StartFadeOut((int)remaining_ms);
+                        status_ = "Fading out...";
+                    }
+                }
+            }
+        }
+
+        // fade-out completed: load pending next track with fade in
+        if (fading_to_next_ && player_.IsFadeOutComplete())
+        {
+            fading_to_next_ = false;
+            PlayIndex(pending_next_index_, true);
+            pending_next_index_ = -1;
+        }
+
+        // auto-next on track end (no crossfade, or no next track during fade)
         if (player_.HasTrackEnded())
         {
-            PlayNext();
+            if (fading_to_next_)
+            {
+                // fade was in progress but track ended, load the pending track now
+                fading_to_next_ = false;
+                PlayIndex(pending_next_index_, true);
+                pending_next_index_ = -1;
+            }
+            else
+            {
+                int next = playlist_.NextIndex(repeat_, shuffle_);
+                if (next >= 0)
+                    PlayIndex(next);
+                else
+                {
+                    player_.Stop();
+                    status_ = "Playlist ended";
+                }
+            }
         }
 
         auto waveform_count = player_.ReadWaveform(waveform_.data(), waveform_.size());

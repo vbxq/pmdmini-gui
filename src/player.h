@@ -47,6 +47,12 @@ class Player
     void SetVolume(int vol);
     void SetMute(bool m);
 
+    void StartFadeOut(int duration_ms);
+    void SetPendingFadeIn(int duration_ms);
+    void ResetFade();
+    bool IsFadeOutComplete();
+    bool IsFadingIn() const;
+
     PlayerState GetState() const;
     bool IsLoading() const;
     std::string GetOutputDevice() const;
@@ -92,6 +98,13 @@ class Player
     std::atomic<bool> mute_{false};
     std::atomic<int64_t> position_samples_{0};
     std::atomic<uint64_t> underrun_count_{0};
+
+    // fade state (manipulated from audio callback)
+    float fade_gain_ = 1.0f;
+    float fade_target_ = 1.0f;
+    float fade_delta_ = 0.0f;
+    std::atomic<bool> fade_out_complete_{false};
+    std::atomic<int> pending_fade_in_ms_{0}; // >0 means apply fade in after next load
 
     std::function<void()> on_track_end_;
     std::mutex callback_mutex_;

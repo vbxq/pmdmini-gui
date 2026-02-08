@@ -16,4 +16,7 @@ FetchContent_MakeAvailable(pmdmini)
 
 if (TARGET pmdmini)
   target_compile_options(pmdmini PRIVATE -w)
+  if(WIN32)
+    target_compile_definitions(pmdmini PRIVATE NOMINMAX)
+  endif()
 endif()

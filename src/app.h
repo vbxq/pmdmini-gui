@@ -18,7 +18,7 @@ class App
     int Run();
 
   private:
-    bool PlayIndex(int index);
+    bool PlayIndex(int index, bool fade_in = false);
     void PlayNext();
     void SyncConfig();
 
@@ -45,6 +45,11 @@ class App
     bool mute_ = false;
     std::string status_;
     bool scanning_active_ = false;
+
+    bool crossfade_enabled_ = false;
+    int crossfade_duration_ms_ = 1000;
+    bool fading_to_next_ = false;
+    int pending_next_index_ = -1;
 
     std::vector<std::string> audio_devices_;
     int audio_device_index_ = 0;

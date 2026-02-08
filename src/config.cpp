@@ -58,6 +58,8 @@ bool Config::Load(const std::filesystem::path &path)
     window_w = j.value("window_w", 1200);
     window_h = j.value("window_h", 800);
     audio_device = j.value("audio_device", "");
+    crossfade_enabled = j.value("crossfade_enabled", false);
+    crossfade_duration_ms = j.value("crossfade_duration_ms", 1000);
 
     return true;
 }
@@ -76,6 +78,8 @@ bool Config::Save(const std::filesystem::path &path) const
     j["window_w"] = window_w;
     j["window_h"] = window_h;
     j["audio_device"] = audio_device;
+    j["crossfade_enabled"] = crossfade_enabled;
+    j["crossfade_duration_ms"] = crossfade_duration_ms;
 
     std::ofstream f(path);
     if (!f)
