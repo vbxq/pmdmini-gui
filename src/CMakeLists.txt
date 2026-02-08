@@ -45,6 +45,13 @@ set(IMGUI_SOURCES
 
 target_sources(pmdmini-gui PRIVATE ${IMGUI_SOURCES})
 
+# Suppress warnings in third-party ImGui sources
+if(MSVC)
+  set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_OPTIONS "/w")
+else()
+  set_source_files_properties(${IMGUI_SOURCES} PROPERTIES COMPILE_OPTIONS "-w")
+endif()
+
 find_package(OpenGL REQUIRED)
 find_package(SDL2 REQUIRED)
 
@@ -73,10 +80,10 @@ if(WIN32 AND MINGW)
   target_link_options(pmdmini-gui PRIVATE -mwindows)
 else()
   target_link_libraries(pmdmini-gui PRIVATE
-    ${SDL2_LIBRARIES}
-    OpenGL::GL
-    nlohmann_json::nlohmann_json
-    pmdmini
+          SDL2::SDL2
+          OpenGL::GL
+          nlohmann_json::nlohmann_json
+          pmdmini
   )
 endif()
 

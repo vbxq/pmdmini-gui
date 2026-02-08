@@ -12,6 +12,7 @@ GUI player for PC-98 PMD music files (.M/.M2/.M26/.M86) on Windows and Linux
 - Drag & drop support
 - Waveform visualization
 - Shuffle and repeat modes
+- Crossfade between tracks (configurable duration)
 - Config persistence
 - Audio device selection
 
@@ -25,7 +26,7 @@ You can get the binary from the release page ! You don't have to build it manual
 **Dependencies:**
 ```bash
 sudo apt-get install cmake ninja-build g++ \
-  libsdl2-dev libgl1-mesa-dev \
+  libsdl2-dev libgl1-mesa-dev libasound2-dev \
   libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 ```
 
@@ -51,7 +52,7 @@ Alternatively, you can install MinGW-w64 standalone and SDL2 development librari
 
 **Build:**
 ```bash
-cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
 cmake --build build
 ```
 
