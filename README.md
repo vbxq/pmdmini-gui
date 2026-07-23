@@ -98,5 +98,8 @@ We also have a small Discord server ! **https://discord.gg/xyqZ86nawn**. Feel fr
 
 ## License and Credits
 
-BSD 3-Clause License. See LICENSE file for details.  
+<a href="COPYING"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/AGPLv3_Logo.svg/1280px-AGPLv3_Logo.svg.png" alt="GNU Affero General Public License v3" width="240"></a>
+
+ug-erlpack is free software released under the [GNU Affero General Public License v3](LICENSE).
+
 Uses [pmdmini](https://github.com/gzaffin/pmdmini) (modified BSD) and other open-source libraries. See individual dependencies for licenses.
